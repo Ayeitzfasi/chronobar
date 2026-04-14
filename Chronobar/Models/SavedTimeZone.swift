@@ -17,7 +17,8 @@ struct SavedTimeZone: Identifiable, Codable, Equatable {
 
     static let defaults: [SavedTimeZone] = [
         SavedTimeZone(label: "Dubai", identifier: "Asia/Dubai", sortOrder: 0, isBaseZone: true),
-        SavedTimeZone(label: "London", identifier: "Europe/London", sortOrder: 1),
-        SavedTimeZone(label: "Toronto", identifier: "America/Toronto", sortOrder: 2)
+        SavedTimeZone(label: "Hyderabad", identifier: "Asia/Kolkata", sortOrder: 1),
+        SavedTimeZone(label: "London", identifier: "Europe/London", sortOrder: 2),
+        SavedTimeZone(label: "Toronto", identifier: "America/Toronto", sortOrder: 3)
     ]
 }
