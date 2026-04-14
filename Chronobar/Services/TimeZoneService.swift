@@ -10,7 +10,17 @@ enum TimeZoneService {
 
         var baseCal = Calendar(identifier: .gregorian)
         baseCal.timeZone = baseTZ
-        let baseDayStart = baseCal.startOfDay(for: date)
+
+        // Use UTC noon as a neutral anchor to compare calendar dates without
+        // timestamp arithmetic skewing the result (e.g. a 20-hour gap that
+        // spans two calendar days should still count as 1 day offset)
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(secondsFromGMT: 0)!
+
+        let baseDay = baseCal.dateComponents([.year, .month, .day], from: date)
+        guard let baseNoon = utcCal.date(from: DateComponents(
+            year: baseDay.year, month: baseDay.month, day: baseDay.day, hour: 12
+        )) else { return [] }
 
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
@@ -25,8 +35,14 @@ enum TimeZoneService {
             var targetCal = Calendar(identifier: .gregorian)
             targetCal.timeZone = tz
 
-            let targetDayStart = targetCal.startOfDay(for: date)
-            let dayOffset = baseCal.dateComponents([.day], from: baseDayStart, to: targetDayStart).day ?? 0
+            // Get the calendar date in the target timezone and anchor to UTC noon
+            let targetDay = targetCal.dateComponents([.year, .month, .day], from: date)
+            guard let targetNoon = utcCal.date(from: DateComponents(
+                year: targetDay.year, month: targetDay.month, day: targetDay.day, hour: 12
+            )) else { return nil }
+
+            // Compare calendar days, not timestamps
+            let dayOffset = utcCal.dateComponents([.day], from: baseNoon, to: targetNoon).day ?? 0
 
             timeFormatter.timeZone = tz
             dateFormatter.timeZone = tz

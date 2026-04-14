@@ -80,12 +80,13 @@ class AppState: ObservableObject {
 
     // MARK: - Zone Management
 
-    func addZone(identifier: String) {
-        guard !savedZones.contains(where: { $0.identifier == identifier }) else { return }
-        let label = identifier.components(separatedBy: "/").last?
+    func addZone(identifier: String, label: String? = nil) {
+        let resolvedLabel = label ?? identifier.components(separatedBy: "/").last?
             .replacingOccurrences(of: "_", with: " ") ?? identifier
+        // Allow multiple entries for same identifier with different city labels (e.g. Mumbai + Hyderabad both = Asia/Kolkata)
+        guard !savedZones.contains(where: { $0.identifier == identifier && $0.label == resolvedLabel }) else { return }
         let nextOrder = (savedZones.map(\.sortOrder).max() ?? -1) + 1
-        savedZones.append(SavedTimeZone(label: label, identifier: identifier, sortOrder: nextOrder))
+        savedZones.append(SavedTimeZone(label: resolvedLabel, identifier: identifier, sortOrder: nextOrder))
         saveZones()
     }
 

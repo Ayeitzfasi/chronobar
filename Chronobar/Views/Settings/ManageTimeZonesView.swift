@@ -127,10 +127,8 @@ struct AddZoneView: View {
     @EnvironmentObject var viewModel: SettingsViewModel
     @Binding var isPresented: Bool
 
-    private var filtered: [String] {
-        let all = TimeZone.knownTimeZoneIdentifiers.sorted()
-        guard !viewModel.searchText.isEmpty else { return all }
-        return all.filter { $0.localizedCaseInsensitiveContains(viewModel.searchText) }
+    private var results: [CityTimeZone] {
+        CityTimeZoneMap.search(viewModel.searchText)
     }
 
     var body: some View {
@@ -139,7 +137,7 @@ struct AddZoneView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
                     .font(.system(size: 13))
-                TextField("Search time zones...", text: $viewModel.searchText)
+                TextField("Search cities or regions...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                 if !viewModel.searchText.isEmpty {
@@ -156,18 +154,23 @@ struct AddZoneView: View {
 
             Divider()
 
-            List(Array(filtered.prefix(60)), id: \.self) { identifier in
+            List(Array(results.prefix(60)), id: \.id) { city in
                 Button {
-                    appState.addZone(identifier: identifier)
+                    appState.addZone(identifier: city.identifier, label: city.label)
                     isPresented = false
                     viewModel.searchText = ""
                 } label: {
                     HStack {
-                        Text(identifier)
-                            .font(.system(size: 12))
-                            .foregroundStyle(.primary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(city.label)
+                                .font(.system(size: 13))
+                                .foregroundStyle(.primary)
+                            Text(city.identifier)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
                         Spacer()
-                        if appState.savedZones.contains(where: { $0.identifier == identifier }) {
+                        if appState.savedZones.contains(where: { $0.identifier == city.identifier && $0.label == city.label }) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 11))
                                 .foregroundStyle(.blue)
@@ -177,7 +180,7 @@ struct AddZoneView: View {
                 .buttonStyle(.plain)
             }
             .listStyle(.plain)
-            .frame(height: 140)
+            .frame(height: 160)
         }
     }
 }
