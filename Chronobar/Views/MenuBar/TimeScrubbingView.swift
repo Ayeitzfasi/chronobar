@@ -3,19 +3,30 @@ import SwiftUI
 struct TimeScrubbingView: View {
     @EnvironmentObject var appState: AppState
 
+    // Always operate in the base (starred) zone's timezone
+    private var baseTZ: TimeZone {
+        appState.baseZone.flatMap { TimeZone(identifier: $0.identifier) } ?? .current
+    }
+
+    private var baseCal: Calendar {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = baseTZ
+        return cal
+    }
+
     private var minuteOfDay: Double {
-        let comps = Calendar.current.dateComponents([.hour, .minute], from: appState.effectiveDate)
+        let comps = baseCal.dateComponents([.hour, .minute], from: appState.effectiveDate)
         return Double((comps.hour ?? 0) * 60 + (comps.minute ?? 0))
     }
 
     private func setMinuteOfDay(_ minutes: Double) {
         let baseDate = appState.isUsingNow ? Date() : appState.selectedDate
         appState.isUsingNow = false
-        var comps = Calendar.current.dateComponents([.year, .month, .day], from: baseDate)
+        var comps = baseCal.dateComponents([.year, .month, .day], from: baseDate)
         comps.hour = Int(minutes) / 60
         comps.minute = Int(minutes) % 60
         comps.second = 0
-        if let newDate = Calendar.current.date(from: comps) {
+        if let newDate = baseCal.date(from: comps) {
             appState.selectedDate = newDate
         }
     }
@@ -23,31 +34,19 @@ struct TimeScrubbingView: View {
     private func setDate(_ newDate: Date) {
         let timeSource = appState.isUsingNow ? Date() : appState.selectedDate
         appState.isUsingNow = false
-        let timeComps = Calendar.current.dateComponents([.hour, .minute, .second], from: timeSource)
-        var dateComps = Calendar.current.dateComponents([.year, .month, .day], from: newDate)
+        let timeComps = baseCal.dateComponents([.hour, .minute, .second], from: timeSource)
+        var dateComps = baseCal.dateComponents([.year, .month, .day], from: newDate)
         dateComps.hour = timeComps.hour
         dateComps.minute = timeComps.minute
         dateComps.second = timeComps.second
-        if let combined = Calendar.current.date(from: dateComps) {
+        if let combined = baseCal.date(from: dateComps) {
             appState.selectedDate = combined
         }
-    }
-
-    private func formatMinuteOfDay(_ minutes: Double) -> String {
-        let h = Int(minutes) / 60
-        let m = Int(minutes) % 60
-        let period = h < 12 ? "AM" : "PM"
-        let displayH = h == 0 ? 12 : (h > 12 ? h - 12 : h)
-        return String(format: "%d:%02d %@", displayH, m, period)
     }
 
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(formatMinuteOfDay(minuteOfDay))
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(appState.isUsingNow ? Color.secondary : Color.primary)
-                Spacer()
                 DatePicker(
                     "",
                     selection: Binding(
@@ -58,6 +57,7 @@ struct TimeScrubbingView: View {
                 )
                 .labelsHidden()
                 .datePickerStyle(.compact)
+                Spacer()
             }
 
             Slider(

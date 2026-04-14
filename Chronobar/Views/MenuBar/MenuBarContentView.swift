@@ -31,5 +31,11 @@ struct MenuBarContentView: View {
             QuickActionsView()
         }
         .frame(width: 300)
+        .onAppear {
+            // Prevent DatePicker or any field from auto-focusing when panel opens
+            DispatchQueue.main.async {
+                NSApp.keyWindow?.makeFirstResponder(nil)
+            }
+        }
     }
 }
