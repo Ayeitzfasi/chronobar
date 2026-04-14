@@ -4,6 +4,34 @@ A native macOS menu bar app for comparing time zones and converting meeting time
 
 ![macOS 13.5+](https://img.shields.io/badge/macOS-13.5%2B-blue) ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 
+## Install
+
+### Option A — One-line Terminal install (recommended)
+
+Paste this into Terminal. It downloads, installs, and bypasses Gatekeeper automatically:
+
+```bash
+curl -L https://github.com/Ayeitzfasi/chronobar/releases/latest/download/Chronobar.dmg -o /tmp/Chronobar.dmg && hdiutil attach /tmp/Chronobar.dmg -mountpoint /tmp/ChronobarMount -quiet && cp -r "/tmp/ChronobarMount/Chronobar.app" /Applications/ && xattr -cr /Applications/Chronobar.app && hdiutil detach /tmp/ChronobarMount -quiet && rm /tmp/Chronobar.dmg && echo "Chronobar installed. Launch it from /Applications or Spotlight."
+```
+
+Then open Chronobar from Spotlight (`Cmd+Space` → type Chronobar) or `/Applications`.
+
+---
+
+### Option B — Manual install
+
+1. Download **Chronobar.dmg** from the [latest release](https://github.com/Ayeitzfasi/chronobar/releases/latest)
+2. Open the DMG → drag **Chronobar.app** to `/Applications`
+3. Remove the quarantine flag in Terminal:
+   ```bash
+   xattr -cr /Applications/Chronobar.app
+   ```
+4. Open Chronobar normally
+
+> **Why the xattr step?** macOS flags apps downloaded from the internet as quarantined. Since Chronobar is distributed internally (not via the App Store), you need to clear this flag once. The `xattr -cr` command is the standard way to do this — it does not modify the app itself.
+
+---
+
 ## Features
 
 - Live time display across multiple time zones in your menu bar
@@ -14,15 +42,6 @@ A native macOS menu bar app for comparing time zones and converting meeting time
 - City name search (75+ cities)
 - Launch at Login support
 - Persists your zones across restarts
-
-## Install
-
-1. Go to the [latest release](https://github.com/Ayeitzfasi/chronobar/releases/latest)
-2. Download **Chronobar.dmg**
-3. Open the DMG → drag **Chronobar.app** to your `/Applications` folder
-4. **First launch only:** right-click `Chronobar.app` → **Open** → click Open in the dialog
-   - This is a one-time step to bypass Gatekeeper for apps distributed outside the App Store
-5. Chronobar appears in your menu bar — click the clock icon to open it
 
 ## Default time zones
 
@@ -40,7 +59,7 @@ Change these any time via the gear icon → Manage Time Zones.
 - [x] Menu bar panel with live timezone rows
 - [x] Interactive time scrubber
 - [x] Inline time editing per zone
-- [x] Day rollover badges
+- [x] Day rollover badges (Yesterday / Today / Tomorrow)
 - [x] Add / remove / rename / reorder zones
 - [x] City name search (75+ cities)
 - [x] Launch at Login
